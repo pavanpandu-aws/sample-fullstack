@@ -76,14 +76,12 @@
    #   ignore_errors: true
    #   changed_when: false
     
-    - name: Create PostgreSQL container
-      docker_container:
-        name: postgres_container
-        image: postgres:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: themoviedb
-        ports:
-          - "5432:5432"
-        restart_policy: always
+    - name: Run Docker command
+      command: >
+        docker run -d
+        --name postgres_container
+        -e POSTGRES_USER=postgres
+        -e POSTGRES_PASSWORD=postgres
+        -e POSTGRES_DB=themoviedb
+        -p 5432:5432
+        postgres:latest
