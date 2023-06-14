@@ -16,22 +16,20 @@ pipeline {
         stage('Set Environment') {
             steps {
                 script {
-                        def branchName = env.BRANCH_NAME ?: env.CHANGE_BRANCH
-                        if (env.BRANCH_NAME.startsWith('dev')) {
-                            // Set environment variables for dev branch
-                        } else if (env.BRANCH_NAME.startsWith('test')) {
-                            // Set environment variables for test branch
-                        } else if (env.BRANCH_NAME.startsWith('prod')) {
-                            // Set environment variables for prod branch
-                        } else {
-                            error("Unsupported branch name: ${env.BRANCH_NAME}")
-                        }
+                    def branchName = env.BRANCH_NAME ?: env.CHANGE_BRANCH
+                    if (branchName.startsWith('dev')) {
+                        // Set environment variables for dev branch
+                    } else if (branchName.startsWith('test')) {
+                        // Set environment variables for test branch
+                    } else if (branchName.startsWith('prod')) {
+                        // Set environment variables for prod branch
                     } else {
-                        error("BRANCH_NAME is not set")
+                        error("Unsupported branch name: ${branchName}")
                     }
                 }
             }
         }
+
 
         stage('Frontend Unit Test') {
             environment {
