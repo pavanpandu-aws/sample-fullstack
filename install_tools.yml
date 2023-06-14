@@ -72,7 +72,7 @@
         state: restarted
 
     - name: Check if PostgreSQL container is already running
-      command: docker inspect -f '{{.State.Running}}' postgres_container
+      shell: docker inspect -f '{{.State.Running}}' postgres_container
       register: postgres_container_status
       changed_when: false
       failed_when: false
