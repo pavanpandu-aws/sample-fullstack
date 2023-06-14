@@ -51,31 +51,32 @@
         state: present
 
     - name: ensure docker registry is available
-      apt_repository: repo='deb https://download.docker.com/linux/ubuntu bionic stable' 
-        state=present
+      apt_repository:
+        repo: 'deb https://download.docker.com/linux/ubuntu bionic stable'
+        state: present
 
     - name: ensure docker and dependencies are installed
-      apt: 
-        name=docker-ce 
-        update_cache=yes
+      apt:
+        name: docker-ce
+        update_cache: yes
 
     - name: Add Ubuntu user to Docker group
       user:
         name: ubuntu
         groups: docker
         append: yes
-    
-    - service: 
-        name=docker 
-        state=restarted
 
+    - name: Restart Docker service
+      systemd:
+        name: docker
+        state: restarted
 
-   # - name: Check if Docker Compose is installed
-   #   command: docker-compose --version
-   #   register: docker_compose_check
-   #   ignore_errors: true
-   #   changed_when: false
-    
+    - name: Check if PostgreSQL container is already running
+      command: docker inspect -f '{{.State.Running}}' postgres_container
+      register: postgres_container_status
+      changed_when: false
+      failed_when: false
+
     - name: Run Docker command
       command: >
         docker run -d
@@ -85,3 +86,4 @@
         -e POSTGRES_DB=themoviedb
         -p 5432:5432
         postgres:latest
+      when: postgres_container_status.stdout != "true"
