@@ -4,6 +4,11 @@ pipeline {
     environment {
         DOCKER_REGISTRY = '634441478571.dkr.ecr.us-west-1.amazonaws.com'
         DOCKER_LATEST_TAG = 'latest'
+        VERSION = '1.0'
+    }
+
+    parameters {
+        choice(name: 'BRANCH_NAME', choices: ['dev', 'test', 'prod'], description: 'Branch name to build')
     }
 
     stages {
@@ -16,20 +21,21 @@ pipeline {
         stage('Set Environment') {
             steps {
                 script {
-                    def branchName = env.BRANCH_NAME ?: env.CHANGE_BRANCH
-                    if (branchName.startsWith('dev')) {
-                        // Set environment variables for dev branch
-                    } else if (branchName.startsWith('test')) {
-                        // Set environment variables for test branch
-                    } else if (branchName.startsWith('prod')) {
-                        // Set environment variables for prod branch
+                    if (env.BRANCH_NAME.startsWith('dev')) {
+                        env.BACKEND_IMAGE_TAG = "dev-backend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
+                        env.FRONTEND_IMAGE_TAG = "dev-frontend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
+                    } else if (env.BRANCH_NAME.startsWith('test')) {
+                        env.BACKEND_IMAGE_TAG = "test-backend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
+                        env.FRONTEND_IMAGE_TAG = "test-frontend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
+                    } else if (env.BRANCH_NAME.startsWith('prod')) {
+                        env.BACKEND_IMAGE_TAG = "prod-backend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
+                        env.FRONTEND_IMAGE_TAG = "prod-frontend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
                     } else {
-                        error("Unsupported branch name: ${branchName}")
+                        error("Unsupported branch name: ${env.BRANCH_NAME}")
                     }
                 }
             }
         }
-
 
         stage('Frontend Unit Test') {
             environment {
@@ -157,8 +163,8 @@ pipeline {
                         sh "aws ecr get-login-password --region ${env.AWS_REGION} | docker login --username AWS --password-stdin ${env.DOCKER_REGISTRY}"
                         sh "docker tag ${env.BACKEND_IMAGE_TAG} ${DOCKER_REGISTRY}/backend:${env.BACKEND_IMAGE_TAG}"
                         sh "docker tag ${env.BACKEND_IMAGE_TAG} ${DOCKER_REGISTRY}/backend:${DOCKER_LATEST_TAG}"
-                        sh "docker tag ${env.FRONTEND_IMAGE_TAG} ${DOCKER_REGISTRY}/backend:${env.BACKEND_IMAGE_TAG}"
-                        sh "docker tag ${env.FRONTEND_IMAGE_TAG} ${DOCKER_REGISTRY}/backend:${DOCKER_LATEST_TAG}"
+                        sh "docker tag ${env.FRONTEND_IMAGE_TAG} ${DOCKER_REGISTRY}/frontend:${env.FRONTEND_IMAGE_TAG}"
+                        sh "docker tag ${env.FRONTEND_IMAGE_TAG} ${DOCKER_REGISTRY}/frontend:${DOCKER_LATEST_TAG}"
                         
                         sh "docker push ${DOCKER_REGISTRY}/backend:${env.BACKEND_IMAGE_TAG}"
                         sh "docker push ${DOCKER_REGISTRY}/backend:${DOCKER_LATEST_TAG}"
