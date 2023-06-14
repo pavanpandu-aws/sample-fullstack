@@ -37,6 +37,14 @@ pipeline {
             }
         }
 
+        stage('prepare') {
+            steps {
+                sh "ansible-vault decrypt --vault-id /tmp/vault_id demo.pem"
+                sh "chmod 400 demo.pem"
+                sh "ansible-playbook -i inventory install_tools.yml"
+            }
+        }
+        
         stage('Frontend Unit Test') {
             environment {
                 NODE_ENV = 'test'
@@ -126,15 +134,6 @@ pipeline {
                 }
             }
         }
-
-         stage('prepare') {
-            steps {
-                sh "ansible-vault decrypt --vault-id /tmp/vault_id demo.pem"
-                sh "chmod 400 demo.pem"
-                sh "ansible-playbook -i inventory install_tools.yml"
-            }
-        }
-
         
         stage('Build Backend Image') {
             steps {
