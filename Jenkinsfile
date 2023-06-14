@@ -16,7 +16,7 @@ pipeline {
         stage('Set Environment') {
             steps {
                 script {
-                    if (env.BRANCH_NAME) {
+                        def branchName = env.BRANCH_NAME ?: env.CHANGE_BRANCH
                         if (env.BRANCH_NAME.startsWith('dev')) {
                             // Set environment variables for dev branch
                         } else if (env.BRANCH_NAME.startsWith('test')) {
