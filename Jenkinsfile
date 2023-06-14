@@ -16,17 +16,18 @@ pipeline {
         stage('Set Environment') {
             steps {
                 script {
-                    if (env.BRANCH_NAME.startsWith('dev')) {
-                        env.BACKEND_IMAGE_TAG = "dev-backend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
-                        env.FRONTEND_IMAGE_TAG = "dev-frontend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
-                    } else if (env.BRANCH_NAME.startsWith('test')) {
-                        env.BACKEND_IMAGE_TAG = "test-backend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
-                        env.FRONTEND_IMAGE_TAG = "test-frontend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
-                    } else if (env.BRANCH_NAME.startsWith('prod')) {
-                        env.BACKEND_IMAGE_TAG = "prod-backend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
-                        env.FRONTEND_IMAGE_TAG = "prod-frontend-${env.BUILD_NUMBER}-${env.GIT_COMMIT.substring(0, 7)}-${env.VERSION}"
+                    if (env.BRANCH_NAME) {
+                        if (env.BRANCH_NAME.startsWith('dev')) {
+                            // Set environment variables for dev branch
+                        } else if (env.BRANCH_NAME.startsWith('test')) {
+                            // Set environment variables for test branch
+                        } else if (env.BRANCH_NAME.startsWith('prod')) {
+                            // Set environment variables for prod branch
+                        } else {
+                            error("Unsupported branch name: ${env.BRANCH_NAME}")
+                        }
                     } else {
-                        error("Unsupported branch name: ${env.BRANCH_NAME}")
+                        error("BRANCH_NAME is not set")
                     }
                 }
             }
