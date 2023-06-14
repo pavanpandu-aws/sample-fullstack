@@ -45,18 +45,36 @@
       ignore_errors: true
       changed_when: false
 
-    - name: Install Docker
-      apt:
-        name: docker-ce
+    - name: ensure repository key is installed
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
         state: present
-        update_cache: yes
-      when: docker_check.rc != 0
 
-    - name: Check if Docker Compose is installed
-      command: docker-compose --version
-      register: docker_compose_check
-      ignore_errors: true
-      changed_when: false
+    - name: ensure docker registry is available
+      apt_repository: repo='deb https://download.docker.com/linux/ubuntu bionic stable' 
+        state=present
+
+    - name: ensure docker and dependencies are installed
+      apt: 
+        name=docker-ce 
+        update_cache=yes
+
+    - name: Add Ubuntu user to Docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+    
+    - service: 
+        name=docker 
+        state=restarted
+
+
+   # - name: Check if Docker Compose is installed
+   #   command: docker-compose --version
+   #   register: docker_compose_check
+   #   ignore_errors: true
+   #   changed_when: false
     
     - name: Create PostgreSQL container
       docker_container:
