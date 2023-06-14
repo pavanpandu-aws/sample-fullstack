@@ -1,0 +1,71 @@
+- name: Install required tools
+  hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Check if Java 17 is installed
+      command: java --version
+      register: java_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Install Java 17
+      apt:
+        name: openjdk-17-jdk
+        update_cache: yes
+      when: java_check.rc != 0
+
+    - name: Check if Maven is installed
+      command: mvn --version
+      register: maven_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Install Maven
+      apt:
+        name: maven
+        update_cache: yes
+      when: maven_check.rc != 0
+
+    - name: Check if Node.js 16.8.0 is installed
+      command: node --version
+      register: node_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Install Node.js 16.8.0
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+      when: node_check.rc != 0
+
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+      when: docker_check.rc != 0
+
+    - name: Check if Docker Compose is installed
+      command: docker-compose --version
+      register: docker_compose_check
+      ignore_errors: true
+      changed_when: false
+    
+    - name: Create PostgreSQL container
+      docker_container:
+        name: postgres_container
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: themoviedb
+        ports:
+          - "5432:5432"
+        restart_policy: always
